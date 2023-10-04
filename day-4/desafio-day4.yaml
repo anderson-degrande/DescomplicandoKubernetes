@@ -1,0 +1,64 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: desafio4
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: desafio4
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 2
+  template:
+    metadata:
+      labels:
+        app: desafio4
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.19.2
+        resources:
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+        livenessProbe: # Onde definimos a nossa probe de vida
+          exec: # O tipo exec é utilizado quando queremos executar algo dentro do container.
+            command: # Onde iremos definir qual comando iremos executar
+              - curl
+              - -f
+              - http://localhost:80/
+          initialDelaySeconds: 10 
+          periodSeconds: 10 
+          timeoutSeconds: 5 
+          successThreshold: 1 
+          failureThreshold: 3            
+        ports:
+        - containerPort: 80
+      - name: linux
+        image: ubuntu
+        resources:
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+        args:
+        - sleep
+        - "1800"
+      - name: redis
+        image: redis
+        resources:
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+        ports:
+        - containerPort: 5000            
+        # readinessProbe:
+        #   tcpSocket: # O tipo de teste que iremos executar, neste caso, iremos executar um teste TCP
+        #     port: 5000 # A porta que iremos testar
+        #   initialDelaySeconds: 10 
+        #   periodSeconds: 10 
+        #   timeoutSeconds: 5 
+        #   successThreshold: 1 
+        #   failureThreshold: 3 
